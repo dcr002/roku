@@ -1,0 +1,130 @@
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../../../favicon.ico">
+
+    <title>Roku</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="bg-light">
+
+    <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">ROKU</a>
+      <button class="navbar-toggler p-0 border-0" type="button" data-toggle="offcanvas">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
+
+      </div>
+    </nav>
+
+    <main role="main" class="container mt-2 pt-5">
+    	<div class="row rounded bg-white mt-2 border border-dark">
+
+    		<div class="col-md-12 col-lg-12 bg-dark text-white pt-2 rounded-top"><h4>Configuration information</h4></div>
+
+    		<div class="w-100 pt-3"></div>
+
+    		<div class="col-md-8 col-lg-8">
+    			
+	    		<form class="form-row w-100" download-form novalidate="true">
+		    		
+		    		<div class="form-group col-md-6">
+		    			<label for="exampleInputEmail1">Username</label>
+						<input type="email" name="user" class="form-control" id="exampleInputEmail1" placeholder="Enter username">
+		    		</div>
+		    		
+		    		<div class="form-group col-md-6">
+		    			<label for="exampleInputPassword1">Password</label>
+						<input type="password" name="passwd" class="form-control" id="exampleInputPassword1" placeholder="Enter Password">
+		    		</div>
+
+		    		<div class="w-100"></div>
+
+		    		<div class="form-group col-md-6">
+		    			<label for="exampleInputDownload1">Download URL</label>
+						<input type="email" name="download" class="form-control" id="exampleInputDownload1" download-url value="http://localhost/info.zip">
+		    		</div>
+		    		
+		    		<div class="form-group col-md-6">
+		    			<label for="exampleInputUpload1">Upload URL</label>
+						<input type="email" name="upload" class="form-control" id="exampleInputUpload1" upload-url value="http://localhost/roku/procesar.php">
+		    		</div>
+
+		    		<div class="w-100"></div>
+					
+					<div class="form-group col-md-6 offset-md-6">
+		    			<button type="submit" class="btn btn-outline-success float-md-right">Aceptar</button>
+		    		</div>		    		
+
+	    		</form>
+    		</div>
+    	</div>
+    </main>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+    <script src="./public/assets/js/digestAuthRequest.js"></script>
+
+
+    <script type="text/javascript">
+    	$(document).ready(() => {
+
+    		$('form[download-form]').on('submit', ev => {
+    			ev.preventDefault();
+    			
+    			let downloadUrl = $(ev.target).find('input[download-url]').val();
+    			let uploadUrl = $(ev.target).find('input[upload-url]').val();
+                let user = $(ev.target).find('input[name="user"]').val();
+                let password = $(ev.target).find('input[name="passwd"]').val();
+
+    			var xhr = new XMLHttpRequest();
+
+    			xhr.open("get", downloadUrl, true);
+    			xhr.onload = () => {
+
+    				var formData = new FormData();
+					formData.append('archive', new Blob([xhr.response], { type: 'application/zip' }), 'archivo.zip');
+					/*formData.append('user', $(ev.target).find('input[name="user"]').val());
+					formData.append('passwd', $(ev.target).find('input[name="passwd"]').val());*/
+    				
+                    let xhr2 = new digestAuthRequest('POST', uploadUrl, user, password);
+                    xhr2.request(
+                        (data) => {
+                            console.info(data)
+                        },
+                        (errorCode) => {
+                            console.info(errorCode)
+                        },
+                        formData
+                    )
+
+    				/*var xhr2 = new XMLHttpRequest();
+    				xhr2.open("POST", uploadUrl, true, username, password);
+                    xhr2.withCredentials = true;
+    				xhr2.send(formData);*/
+    			}
+
+    			xhr.onprogress = ev => {
+    				let progress = ((ev.loaded * 100) / ev.total);
+    				console.info(progress, ev);
+    			}
+
+    			xhr.send();
+
+    		})
+    	});
+    </script>
+</body>
+</html>
